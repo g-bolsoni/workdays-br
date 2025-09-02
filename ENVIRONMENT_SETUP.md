@@ -2,7 +2,7 @@
 
 ## ⚠️ **IMPORTANT - Security Notice**
 
-**NEVER commit `.env` files to your repository!** 
+**NEVER commit `.env` files to your repository!**
 
 Environment files contain sensitive information like API keys, database passwords, and other secrets that should not be publicly visible.
 
@@ -86,7 +86,7 @@ cd backend
 cp .env.development.example .env.development
 # Edit .env.development with your local settings
 
-# Frontend  
+# Frontend
 cd ../frontend
 cp .env.development.example .env.development
 # Edit .env.development with your local settings
