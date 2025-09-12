@@ -1,0 +1,15 @@
+version: 2
+
+authtoken: 2BBYdTs0HuurHrfLykLc99UMSi7_76a1s3wHfcc6Gh321eV6v
+
+# Defina os túneis para frontend e backend
+
+# Altere os nomes se quiser
+
+tunnels:
+  frontend:
+    proto: http
+    addr: 5173
+  backend:
+    proto: http
+    addr: 3001
