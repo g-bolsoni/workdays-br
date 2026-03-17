@@ -2,178 +2,105 @@
 
 Um sistema completo para calcular datas finais considerando dias úteis e feriados nacionais brasileiros.
 
+**🌐 Acesse em: [workdays.devbolsoni.com.br](https://workdays.devbolsoni.com.br)**
+
 ## 📁 Estrutura do Projeto
 
 ```
-├── backend/              # API REST em Node.js + Express
-│   ├── src/             # Código fonte refatorado
-│   │   ├── calculators/ # Lógica de cálculo de dias úteis
-│   │   ├── controllers/ # Controladores HTTP
-│   │   ├── services/    # Integração com APIs externas
-│   │   ├── utils/       # Utilitários de data
-│   │   └── config/      # Configurações
-│   ├── tests/           # Testes unitários
-│   ├── server.js        # Entry point da aplicação
-│   └── README.md        # Documentação do backend
-│
-├── frontend/            # Interface web com Vite
-│   ├── index.html      # Interface principal
-│   ├── main.js         # Lógica do frontend
-│   ├── vite.config.js  # Configuração do Vite
-│   └── README.md       # Documentação do frontend
-│
-└── REFACTORING_SUMMARY.md # Documentação das melhorias
-
+workdays-br/
+├── api/                    # Serverless Functions (Vercel)
+│   ├── calculate.js        # POST /api/calculate
+│   └── health.js           # GET /api/health
+├── src/                    # Lógica de negócio
+│   ├── calculators/        # BusinessDayCalculator
+│   ├── controllers/        # BusinessDayController
+│   ├── services/           # HolidayService (BrasilAPI)
+│   ├── utils/              # DateUtils
+│   └── config/             # Configurações
+├── tests/                  # Testes unitários (66 testes)
+│   ├── calculators/
+│   ├── controllers/
+│   ├── services/
+│   └── utils/
+├── public/                 # Frontend estático
+│   ├── index.html
+│   └── main.js
+├── package.json
+└── vercel.json             # Configuração Vercel
 ```
 
 ## 🏗️ Arquitetura do Sistema
 
 ```mermaid
 graph TB
-    subgraph "Frontend (Vite + Vanilla JS)"
+    subgraph "Frontend (Vanilla JS)"
         UI[Interface HTML]
         JS[main.js]
-        DateUtils[DateUtils]
         UI --> JS
-        JS --> DateUtils
     end
 
-    subgraph "Backend (Node.js + Express)"
-        Server[server.js]
-        App[App.js]
-        Controller[BusinessDayController]
+    subgraph "Vercel Serverless"
+        Health[api/health.js]
+        Calculate[api/calculate.js]
         Calculator[BusinessDayCalculator]
         HolidayService[HolidayService]
-        DateUtilsBackend[DateUtils]
+        DateUtils[DateUtils]
         
-        Server --> App
-        App --> Controller
-        Controller --> Calculator
+        Calculate --> Calculator
         Calculator --> HolidayService
-        Calculator --> DateUtilsBackend
+        Calculator --> DateUtils
     end
 
     subgraph "External APIs"
         BrasilAPI[BrasilAPI - Feriados]
     end
 
-    JS -->|HTTP POST /calculate| Controller
+    JS -->|POST /calculate| Calculate
     HolidayService -->|GET /feriados| BrasilAPI
-    Controller -->|JSON Response| JS
 
     style UI fill:#e1f5fe
     style BrasilAPI fill:#fff3e0
     style Calculator fill:#e8f5e8
 ```
 
-## 🔄 Fluxo de Dados
-
-```mermaid
-sequenceDiagram
-    participant U as Usuário
-    participant F as Frontend
-    participant B as Backend
-    participant API as BrasilAPI
-
-    U->>F: Seleciona data (calendário)
-    F->>F: Converte para formato brasileiro
-    U->>F: Insere dias úteis
-    U->>F: Clica "Calcular"
-    
-    F->>F: Converte data brasileira para ISO
-    F->>B: POST /calculate {startDate, businessDays}
-    
-    B->>API: GET /feriados/{year}
-    API->>B: Lista de feriados
-    B->>B: Cache dos feriados
-    
-    B->>B: Calcula dias úteis
-    B->>B: Pula fins de semana
-    B->>B: Pula feriados
-    
-    B->>F: JSON {success, data: {startDate, endDate}}
-    F->>F: Converte datas para formato brasileiro
-    F->>U: Exibe resultado formatado
-```
-
 ## 🚀 Quick Start
 
-### 1. Backend (API)
+### Desenvolvimento Local
+
 ```bash
-cd backend/
+# Instalar dependências
 npm install
-npm start
-```
-API estará disponível em: http://localhost:3001
 
-### 2. Frontend (Interface)
+# Rodar localmente (Vercel Dev)
+npx vercel dev
+
+# Executar testes
+npm test
+```
+
+### Deploy
+
 ```bash
-cd frontend/
-npm install
-npm run dev
+# Preview
+npx vercel
+
+# Produção
+npx vercel --prod
 ```
-Interface estará disponível em: http://localhost:5173
-
-## 🚀 Deployment Architecture
-
-```mermaid
-graph TB
-    subgraph "Development Environment"
-        DevFE[Frontend Dev Server<br/>:5173]
-        DevBE[Backend Dev Server<br/>:3001]
-        DevFE -.->|Proxy| DevBE
-    end
-
-    subgraph "Production Environment"
-        LoadBalancer[Load Balancer]
-        Frontend[Static Files<br/>Nginx/CDN]
-        Backend[Node.js API<br/>PM2/Docker]
-        Database[(Cache/Redis)]
-        
-        LoadBalancer --> Frontend
-        LoadBalancer --> Backend
-        Backend --> Database
-    end
-
-    subgraph "External Services"
-        BrasilAPI[BrasilAPI<br/>Holidays Data]
-        CDN[CDN<br/>Static Assets]
-    end
-
-    Frontend --> CDN
-    Backend --> BrasilAPI
-    
-    style DevFE fill:#e1f5fe
-    style DevBE fill:#e8f5e8
-    style Frontend fill:#e1f5fe
-    style Backend fill:#e8f5e8
-    style BrasilAPI fill:#fff3e0
-```
-
-## 🌟 Funcionalidades
-
-### 📅 **Cálculo Inteligente**
-- Considera apenas dias úteis (segunda a sexta-feira)
-- Exclui automaticamente feriados nacionais brasileiros
-- Integração com BrasilAPI para dados atualizados
-
-### 🎯 **Interface Brasileira**
-- Seleção de data via calendário nativo
-- Exibição em formato brasileiro (dd/mm/aaaa)
-- Conversões automáticas e transparentes
-- Validação inteligente de datas
-
-### 🏗️ **Arquitetura Limpa**
-- Princípios SOLID aplicados
-- Separação clara de responsabilidades
-- Código testável e manutenível
-- Documentação completa
 
 ## 📋 Endpoints da API
 
 ### Health Check
 ```http
 GET /health
+```
+```json
+{
+  "status": "OK",
+  "timestamp": "2026-03-17T02:09:57.471Z",
+  "service": "Business Day Calculator API",
+  "environment": "Vercel Serverless"
+}
 ```
 
 ### Calcular Dias Úteis
@@ -182,8 +109,18 @@ POST /calculate
 Content-Type: application/json
 
 {
-  "startDate": "2025-11-17",
+  "startDate": "2026-03-17",
   "businessDays": 5
+}
+```
+```json
+{
+  "success": true,
+  "data": {
+    "startDate": "2026-03-17",
+    "businessDays": 5,
+    "endDate": "2026-03-23"
+  }
 }
 ```
 
@@ -193,114 +130,71 @@ POST /calcular
 Content-Type: application/json
 
 {
-  "dataInicial": "2025-11-17",
+  "dataInicial": "2026-03-17",
   "diasUteis": 5
 }
 ```
 
+## 🧪 Testes
+
+O projeto possui **66 testes unitários** cobrindo:
+
+| Módulo | Testes | Cobertura |
+|--------|--------|-----------|
+| DateUtils | 9 | createSafeDate, formatToISODate, isWeekend, isHoliday, isBusinessDay |
+| BusinessDayCalculator | 26 | Validação, cálculo, feriados, fins de semana, virada de ano |
+| HolidayService | 15 | Cache, integração API, múltiplos anos |
+| BusinessDayController | 16 | HTTP 400/500, validação, segurança |
+
+```bash
+npm test
+```
+
+## 🌟 Funcionalidades
+
+### 📅 **Cálculo Inteligente**
+- Considera apenas dias úteis (segunda a sexta-feira)
+- Exclui automaticamente feriados nacionais brasileiros
+- Integração com BrasilAPI para dados atualizados
+- Cache de feriados para performance
+
+### 🎯 **Interface Brasileira**
+- Seleção de data via calendário nativo
+- Exibição em formato brasileiro (dd/mm/aaaa)
+- Conversões automáticas e transparentes
+
+### 🏗️ **Arquitetura Limpa**
+- Princípios SOLID aplicados
+- Separação clara de responsabilidades
+- Código testável e manutenível
+- Serverless Functions (Vercel)
+
 ## 💡 Exemplo de Uso
 
-**Input:** 17/11/2025 + 5 dias úteis  
-**Output:** 24/11/2025  
-
-*Considerando que 20/11/2025 é feriado (Consciência Negra)*
-
-## 🧮 Business Logic Flow
-
-```mermaid
-flowchart TD
-    Start[Início: Data + Dias Úteis]
-    
-    Start --> CheckStart{Data inicial é dia útil?}
-    CheckStart -->|Sim| Count1[Contador = 1]
-    CheckStart -->|Não| Count0[Contador = 0]
-    
-    Count1 --> CheckComplete1{Contador = Meta?}
-    Count0 --> NextDay[Próximo dia]
-    CheckComplete1 -->|Sim| End[Retorna data atual]
-    CheckComplete1 -->|Não| NextDay
-    
-    NextDay --> CheckWeekend{É fim de semana?}
-    CheckWeekend -->|Sim| NextDay
-    CheckWeekend -->|Não| CheckHoliday{É feriado?}
-    
-    CheckHoliday -->|Sim| NextDay
-    CheckHoliday -->|Não| Increment[Contador++]
-    
-    Increment --> CheckComplete2{Contador = Meta?}
-    CheckComplete2 -->|Sim| End
-    CheckComplete2 -->|Não| NextDay
-    
-    style Start fill:#e1f5fe
-    style End fill:#e8f5e8
-    style CheckHoliday fill:#fff3e0
-```
-
-## 📊 System Components
-
-```mermaid
-mindmap
-  root((Business Day Calculator))
-    Frontend
-      Calendar Input
-      Brazilian Display
-      Date Conversion
-      User Interface
-    Backend
-      Express Server
-      Clean Architecture
-        Controllers
-        Business Logic
-        Services
-        Utils
-      Holiday Integration
-    External
-      BrasilAPI
-      National Holidays
-      Caching System
-    Features
-      Weekend Detection
-      Holiday Exclusion
-      Brazilian Format
-      Responsive Design
-```
+**Input:** 17/03/2026 + 5 dias úteis  
+**Output:** 23/03/2026
 
 ## 🛠️ Tecnologias
 
-### Backend
-- **Node.js** - Runtime JavaScript
-- **Express** - Framework web
+- **Node.js 18+** - Runtime JavaScript
+- **Vercel** - Serverless Functions + Hosting
 - **BrasilAPI** - Dados de feriados nacionais
-- **ESModules** - Sistema de módulos moderno
+- **Vanilla JavaScript** - Frontend sem frameworks
 
-### Frontend  
-- **Vite** - Build tool e dev server
-- **Vanilla JavaScript** - Sem frameworks pesados
-- **CSS3** - Styling moderno e responsivo
-- **HTML5** - Semântica e acessibilidade
+## 🔗 URLs
 
-## 📖 Documentação Detalhada
+| Ambiente | URL |
+|----------|-----|
+| **Produção** | https://workdays.devbolsoni.com.br |
+| **Vercel** | https://workdays-br.vercel.app |
 
-- [Backend README](./backend/README.md) - API, arquitetura e endpoints
-- [Frontend README](./frontend/README.md) - Interface, UX e conversões
-- [Refactoring Summary](./REFACTORING_SUMMARY.md) - Melhorias e boas práticas
+## ✨ Características
 
-## ✨ Características Destacadas
-
-- 🇧🇷 **100% Brasileiro**: Formato de datas, feriados e interface
-- 📱 **Responsivo**: Funciona perfeitamente em mobile
-- ⚡ **Rápido**: Cache de feriados e otimizações
-- 🔒 **Confiável**: Validação completa e tratamento de erros
-- 🧪 **Testado**: Testes unitários e validação
-- 📚 **Documentado**: README completo e JSDoc
-
-## 🎯 Status do Projeto
-
-- ✅ **Backend**: Produção-ready com Clean Architecture
-- ✅ **Frontend**: Interface moderna e acessível  
-- ✅ **Integração**: BrasilAPI para feriados atualizados
-- ✅ **Testes**: Cobertura de casos principais
-- ✅ **Documentação**: Completa e atualizada
+- 🇧🇷 **100% Brasileiro**: Formato de datas e feriados
+- ⚡ **Serverless**: Escala automática, sem gerenciamento de servidor
+- 🧪 **66 Testes**: Cobertura completa
+- 📱 **Responsivo**: Funciona em mobile
+- 🔒 **Seguro**: Validação completa e tratamento de erros
 
 ---
 
