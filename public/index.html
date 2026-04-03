@@ -1,232 +1,287 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calculadora de Dias Úteis - Brasil</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Calculadora de Dias Úteis - Brasil</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+      body {
+        font-family:
+          "Inter",
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+        background: linear-gradient(135deg, #e9ecf3 0%, #dbe2ee 100%);
+        min-height: 100vh;
+        color: #23272f;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+      }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      line-height: 1.6;
-      color: #333;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      padding: 20px;
-    }
+      /* Glassmorphism background layer */
+      .glass-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 0;
+        pointer-events: none;
+        background: radial-gradient(
+          circle at 60% 40%,
+          rgba(102, 126, 234, 0.13) 0%,
+          rgba(94, 198, 202, 0.1) 60%,
+          transparent 100%
+        );
+        opacity: 0.9;
+      }
 
-    #app {
-      max-width: 800px;
-      margin: 0 auto;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-      padding: 40px;
-    }
-
-    h1 {
-      color: #2c3e50;
-      margin-bottom: 10px;
-      font-size: 2.5rem;
-      text-align: center;
-    }
-
-    h3 {
-      color: #34495e;
-      margin-bottom: 15px;
-    }
-
-    p {
-      margin-bottom: 20px;
-      color: #666;
-      text-align: center;
-    }
-
-    .form-group {
-      margin-bottom: 20px;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: 600;
-      color: #2c3e50;
-    }
-
-    input {
-      width: 100%;
-      padding: 12px;
-      border: 2px solid #ddd;
-      border-radius: 8px;
-      font-size: 16px;
-      transition: border-color 0.3s ease;
-    }
-
-    input:focus {
-      outline: none;
-      border-color: #667eea;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-
-    input[type="text"]::placeholder {
-      color: #999;
-      font-style: italic;
-    }
-
-    #dateDisplay {
-      margin-top: 8px;
-      padding: 8px 12px;
-      background: #f8f9fa;
-      border-radius: 6px;
-      border-left: 3px solid #667eea;
-      font-size: 14px;
-      color: #495057;
-    }
-
-    #selectedDate {
-      font-weight: 600;
-      color: #667eea;
-    }
-
-    small {
-      display: block;
-      margin-top: 5px;
-      font-size: 12px;
-      color: #666;
-    }
-
-    button {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border: none;
-      padding: 15px 30px;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      width: 100%;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    }
-
-    button:active {
-      transform: translateY(0);
-    }
-
-    #result {
-      margin-top: 30px;
-    }
-
-    .result-success {
-      background: #d4edda;
-      border: 1px solid #c3e6cb;
-      border-radius: 8px;
-      padding: 20px;
-      color: #155724;
-    }
-
-    .result-fields {
-      margin: 15px 0;
-    }
-
-    .field-row {
-      display: flex;
-      align-items: center;
-      margin-bottom: 10px;
-      text-align: left;
-    }
-
-    .field-label {
-      font-weight: 600;
-      min-width: 120px;
-      margin-right: 10px;
-      color: #155724;
-    }
-
-    .field-value {
-      font-weight: 400;
-      color: #155724;
-    }
-
-    .result-error {
-      background: #f8d7da;
-      border: 1px solid #f5c6cb;
-      border-radius: 8px;
-      padding: 20px;
-      color: #721c24;
-    }
-
-    #api-info {
-      margin-top: 40px;
-      padding: 20px;
-      background: #f8f9fa;
-      border-radius: 8px;
-      border-left: 4px solid #667eea;
-    }
-
-    #api-status {
-      font-weight: 600;
-    }
-
-    hr {
-      margin: 15px 0;
-      border: none;
-      border-top: 1px solid #ddd;
-    }
-
-    .brazilian-flag {
-      display: inline-block;
-      margin-left: 10px;
-      font-size: 1.2em;
-    }
-
-    @media (max-width: 600px) {
       #app {
-        padding: 20px;
-        margin: 10px;
+        max-width: 520px;
+        width: 100%;
+        margin: 48px 0 24px 0;
+        background: rgba(255, 255, 255, 0.72);
+        border-radius: 22px;
+        box-shadow: 0 8px 36px rgba(80, 80, 120, 0.13);
+        padding: 54px 38px 40px 38px;
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+        backdrop-filter: blur(16px) saturate(1.2);
+        -webkit-backdrop-filter: blur(16px) saturate(1.2);
+        border: 1.5px solid rgba(180, 200, 255, 0.18);
+        z-index: 1;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+      .logo-flag {
+        font-size: 1.7rem;
+        filter: grayscale(0.1) brightness(1.1);
       }
 
       h1 {
+        color: #23272f;
         font-size: 2rem;
-      }
-    }
-
-    /* Loading animation */
-    .loading {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 3px solid #f3f3f3;
-      border-top: 3px solid #667eea;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      0% {
-        transform: rotate(0deg);
+        font-weight: 600;
+        text-align: center;
+        letter-spacing: -1px;
+        margin-bottom: 0.2em;
       }
 
-      100% {
-        transform: rotate(360deg);
+      p {
+        margin-bottom: 12px;
+        color: #6b7280;
+        text-align: center;
+        font-size: 1.05rem;
       }
-    }
-  </style>
-</head>
 
-<body>
-  <div id="app"></div>
-  <script type="module" src="/main.js"></script>
-</body>
+      .form-group {
+        margin-bottom: 18px;
+      }
 
+      label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 600;
+        color: #23272f;
+        font-size: 0.98rem;
+      }
+
+      input {
+        width: 100%;
+        padding: 11px 13px;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 7px;
+        font-size: 1rem;
+        background: #f9fafb;
+        color: #23272f;
+        transition: border-color 0.2s;
+      }
+      input:focus {
+        outline: none;
+        border-color: #667eea;
+        background: #fff;
+      }
+      input[type="text"]::placeholder,
+      input[type="number"]::placeholder {
+        color: #bdbdbd;
+        font-style: italic;
+      }
+
+      #dateDisplay {
+        margin-top: 7px;
+        padding: 7px 10px;
+        background: #f4f6fb;
+        border-radius: 5px;
+        border-left: 3px solid #667eea;
+        font-size: 13px;
+        color: #495057;
+      }
+      #selectedDate {
+        font-weight: 600;
+        color: #667eea;
+      }
+
+      button {
+        background: linear-gradient(90deg, #667eea 0%, #5ec6ca 100%);
+        color: #fff;
+        border: none;
+        padding: 13px 0;
+        border-radius: 7px;
+        font-size: 1.08rem;
+        font-weight: 600;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 10px;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.07);
+        transition:
+          background 0.2s,
+          box-shadow 0.2s,
+          transform 0.1s;
+      }
+      button:hover {
+        background: linear-gradient(90deg, #5ec6ca 0%, #667eea 100%);
+        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.13);
+        transform: translateY(-1px) scale(1.01);
+      }
+      button:active {
+        transform: scale(0.99);
+      }
+
+      #result {
+        margin-top: 22px;
+      }
+      .result-success {
+        background: #eafaf1;
+        border-radius: 7px;
+        padding: 18px 16px 14px 16px;
+        color: #1b5e20;
+        border: none;
+        box-shadow: 0 1px 4px rgba(80, 120, 80, 0.04);
+      }
+      .result-fields {
+        margin: 12px 0 10px 0;
+      }
+      .field-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 7px;
+        text-align: left;
+      }
+      .field-label {
+        font-weight: 600;
+        min-width: 110px;
+        margin-right: 8px;
+        color: #1b5e20;
+        font-size: 0.98rem;
+      }
+      .field-value {
+        font-weight: 400;
+        color: #1b5e20;
+        font-size: 0.98rem;
+      }
+      .result-error {
+        background: #fff0f2;
+        border-radius: 7px;
+        padding: 18px 16px 14px 16px;
+        color: #b71c1c;
+        border: none;
+        box-shadow: 0 1px 4px rgba(120, 80, 80, 0.04);
+      }
+
+      #api-info {
+        margin-top: 30px;
+        padding: 14px 12px 10px 12px;
+        background: #f6f8fa;
+        border-radius: 7px;
+        border-left: 3px solid #667eea;
+        font-size: 0.98rem;
+      }
+      #api-status {
+        font-weight: 600;
+      }
+      hr {
+        margin: 12px 0;
+        border: none;
+        border-top: 1px solid #e5e7eb;
+      }
+      @media (max-width: 600px) {
+        #app {
+          padding: 14px 2vw 18px 2vw;
+          margin: 10px 0;
+          max-width: 98vw;
+        }
+        h1 {
+          font-size: 1.3rem;
+        }
+      }
+      /* Loading spinner */
+      .loading {
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        border: 2.5px solid #e3e3e3;
+        border-top: 2.5px solid #667eea;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin-left: 7px;
+        vertical-align: middle;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="glass-bg"></div>
+    <div id="app"></div>
+    <footer
+      style="
+        text-align: center;
+        color: #bdbdbd;
+        font-size: 0.98rem;
+        margin-bottom: 18px;
+      "
+    >
+      <span
+        >Feito com ❤️ no Brasil &middot;
+        <a
+          href="https://workdays.devbolsoni.com.br"
+          style="color: #667eea; text-decoration: none"
+          >workdays.devbolsoni.com.br</a
+        ></span
+      >
+    </footer>
+    <script type="module" src="/main.js"></script>
+  </body>
 </html>
